@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import { useSupabase } from '~/composables/useSupabase';
 import { useSeoMeta } from '#imports';
+import { useAuth } from '~/composables/useAuth'
 
 const route = useRoute();
+const router = useRouter();
 const { id } = route.params;
 
 const recipe = ref<any | null>(null);
 const error = ref<string | null>(null);
 
 const supabase = useSupabase();
+const { user, fetchUser } = useAuth()
 
 onMounted(async () => {
     try {
@@ -46,6 +49,21 @@ onMounted(async () => {
         }
     }
 });
+
+const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this recipe?')) return
+
+    const { error: deleteError } = await supabase
+        .from('recipes')
+        .delete()
+        .eq('id', id)
+
+    if (deleteError) {
+        console.error('Error deleting recipe:', deleteError.message)
+    } else {
+        router.push('/')
+    }
+}
 </script>
 
 <template>
@@ -98,18 +116,25 @@ onMounted(async () => {
             <div class="mb-16">
                 <h2 class="text-3xl font-medium mb-4">Instructions</h2>
                 <ul class="flex flex-col gap-4 text-lg">
-                    <li v-for="(instruction, index) in recipe.instructions" :key="index" class="flex items-start gap-4">
-                        <span
-                            class="w-7 h-7 flex items-center justify-center bg-dodgeroll-gold-500 text-white text-sm rounded-full">
-                            {{ index + 1 }}
-                        </span>
-                        <span>{{ instruction }}</span>
+                    <li v-for="instruction in recipe.instructions" :key="instruction">
+                        <label class="flex items-center gap-3">
+                            <input class="hidden peer" type="checkbox" />
+                            <div
+                                class="w-6 h-6 rounded-full border-2 border-dodgeroll-gold-500 flex items-center justify-center peer-checked:after:absolute peer-checked:after:w-4 peer-checked:after:h-4 peer-checked:after:bg-dodgeroll-gold-500 peer-checked:after:rounded-full" />
+                            <span class="peer-checked:line-through">{{ instruction }}</span>
+                        </label>
                     </li>
                 </ul>
             </div>
 
             <!-- Back Button -->
-            <BaseBtn :to="`/recipes`" label="Back to Recipes" />
+            <BaseBtn :to="`/`" label="Back to Recipes" />
+
+            <div v-if="user?.id === recipe.userId">
+                <button @click="handleDelete">
+                    Delete Recipe
+                </button>
+            </div>
         </div>
     </div>
 </template>
