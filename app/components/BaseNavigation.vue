@@ -1,4 +1,19 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useAuth } from '~/composables/useAuth';
+import { useRouter } from 'vue-router';
+
+const { user, fetchUser, logout } = useAuth()
+const router = useRouter()
+
+if (process.client && !user.value) {
+    fetchUser()
+}
+
+const handleLogout = async () => {
+    await logout()
+    router.push('/login')
+}
+</script>
 
 <template>
     <header class="py-4 border-b">
@@ -13,6 +28,15 @@
                 </li>
                 <li>
                     <NuxtLink to="/about">About</NuxtLink>
+                </li>
+                <li v-if="user">
+                    <NuxtLink to="/user-recipes">My Recipes</NuxtLink>
+                </li>
+                <li v-if="user">
+                    <button @click="handleLogout">Log Out</button>
+                </li>
+                <li v-else>
+                    <NuxtLink to="/login">Login</NuxtLink>
                 </li>
             </ul>
         </nav>

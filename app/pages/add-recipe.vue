@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth';
 import { createClient } from '@supabase/supabase-js';
 import { ref } from 'vue'
 import type { Database } from '~~/types/supabase';
 import { useRouter } from 'vue-router';
+import RecipeCard from '~/components/RecipeCard.vue';
 
 type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
 
 const config = useRuntimeConfig()
 const supabase = createClient(config.public.supabaseUrl, config.public.supabaseKey)
 const router = useRouter()
+const { user } = useAuth()
 
 const rawForm = ref({
     name: '',
@@ -28,13 +31,8 @@ const rawForm = ref({
 });
 
 async function submitRecipe() {
-    // Get number of existing recipes
-    const { count, error: countError } = await supabase
-        .from('recipes')
-        .select('*', { count: 'exact', head: true });
-
-    if (countError) {
-        console.error('Error fetching recipe count:', countError.message)
+    if (!user.value) {
+        console.error('User is not logged in!')
         return
     }
 
@@ -44,12 +42,13 @@ async function submitRecipe() {
         instructions: rawForm.value.instructions.split('\n').map(instruction => instruction.trim()),
         tags: rawForm.value.tags.split('\n').map(tag => tag.trim()),
         mealType: rawForm.value.mealType.split('\n').map(type => type.trim()),
+        userId: user.value.id
     };
 
     const { error } = await supabase.from('recipes').insert([form]);
 
     if (error) {
-        console.error('[4] Error adding recipe:', error.message);
+        console.error('Error adding recipe:', error.message);
         return;
     }
 
