@@ -1,4 +1,7 @@
 <script setup lang="ts">
+definePageMeta({
+    middleware: 'auth-redirect'
+})
 import { onMounted } from 'vue'
 import { createClient } from '@supabase/supabase-js'
 import { useAuth } from '~/composables/useAuth'
@@ -38,12 +41,11 @@ const fetchUserRecipes = async () => {
 }
 
 onMounted(async () => {
-    // 👇 Ensure we fetch the user first on client side
-    await fetchUser()
-
-    // 👇 Now safely fetch recipes
-    await fetchUserRecipes()
+    if (user.value) {
+        await fetchUserRecipes()
+    }
 })
+
 </script>
 
 <template>

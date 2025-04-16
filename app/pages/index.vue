@@ -1,7 +1,4 @@
 <script setup lang="ts">
-definePageMeta({
-    middleware: 'auth'
-})
 import RecipeCard from '~/components/RecipeCard.vue';
 import { useSupabase } from '~/composables/useSupabase'
 import { ref, onMounted } from 'vue'

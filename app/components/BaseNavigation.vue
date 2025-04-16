@@ -30,7 +30,7 @@ const handleLogout = async () => {
                     <NuxtLink to="/about">About</NuxtLink>
                 </li>
                 <li v-if="user">
-                    <NuxtLink to="/user-recipes">My Recipes</NuxtLink>
+                    <NuxtLink to="/my-recipes">My Recipes</NuxtLink>
                 </li>
                 <li v-if="user">
                     <button @click="handleLogout">Log Out</button>

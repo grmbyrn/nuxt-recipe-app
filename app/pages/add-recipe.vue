@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 import { ref } from 'vue'
 import type { Database } from '~~/types/supabase';
 import { useRouter } from 'vue-router';
-import RecipeCard from '~/components/RecipeCard.vue';
 
 type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
 
@@ -97,9 +96,6 @@ async function submitRecipe() {
             </div>
 
             <input v-model="rawForm.image" placeholder="Image URL" class="input" required />
-
-            <input type="number" step="0.1" v-model="rawForm.rating" placeholder="Rating" class="input" required />
-            <input type="number" v-model="rawForm.reviewCount" placeholder="Review Count" class="input" required />
 
             <!-- Meal Type -->
             <div>

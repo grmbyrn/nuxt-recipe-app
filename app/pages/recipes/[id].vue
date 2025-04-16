@@ -78,15 +78,15 @@ const handleDelete = async () => {
                 <h1 class="text-5xl font-bold mb-4">{{ recipe.name }}</h1>
                 <div class="flex gap-4 text-xl text-gray-800 mb-6">
                     <div class="flex items-center gap-2">
-                        <UIcon name="i-mdi-clock-time-eight-outline" class="text-dodgeroll-gold-500" />
+                        <Icon name="i-mdi-clock-time-eight-outline" style="color: #f79f1a" />
                         <span>{{ recipe.cookTimeMinutes }} mins</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <UIcon name="i-mdi-fire" class="text-dodgeroll-gold-500" />
+                        <Icon name="i-mdi-fire" style="color: #f79f1a" />
                         <span>{{ recipe.caloriesPerServing }} kcal</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <UIcon name="i-mdi-star" class="text-dodgeroll-gold-500" />
+                        <Icon name="i-mdi-star" style="color: #f79f1a" />
                         <span>{{ recipe.rating }} ({{ recipe.reviewCount }})</span>
                     </div>
                 </div>
@@ -134,6 +134,10 @@ const handleDelete = async () => {
                 <button @click="handleDelete">
                     Delete Recipe
                 </button>
+                <NuxtLink v-if="user?.id === recipe.userId" :to="`/edit-recipe/${recipe.id}`"
+                    class="text-blue-500 underline">
+                    Edit Recipe
+                </NuxtLink>
             </div>
         </div>
     </div>

@@ -4,19 +4,31 @@ import type { User } from '@supabase/supabase-js'
 export const useAuth = () => {
   const supabase = useSupabase()
   const user = useState<User | null>('user', () => null)
+  const accessToken = useState<string | null>('accessToken', () => null)
 
   const fetchUser = async () => {
-    // Use supabase.auth.getUser() to get the authenticated user
-    const { data, error } = await supabase.auth.getUser()
-
-    const { data: sessionData } = await supabase.auth.getSession()
-
+    const { data: sessionData, error } = await supabase.auth.getSession()
+  
     if (error) {
-        user.value = null
-        return
+      console.error('Error fetching session:', error)
+      user.value = null
+      accessToken.value = null
+      return
     }
-    
-    user.value = data.user
+  
+    const session = sessionData?.session
+    if (session && session.user) {
+      user.value = session.user
+      accessToken.value = session.access_token
+    } else {
+      user.value = null
+      accessToken.value = null
+    }
+  }
+
+  // On app load, we should immediately check the session.
+  const loadUserOnStartup = () => {
+    fetchUser() // Get session when app initializes
   }
 
   const signUp = async (email: string, password: string) => {
@@ -34,7 +46,22 @@ export const useAuth = () => {
   const logout = async () => {
     await supabase.auth.signOut()
     user.value = null
+    accessToken.value = null
   }
+
+  // Listen for auth state changes to update the user state on page reload
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (session?.user) {
+      user.value = session.user
+      accessToken.value = session.access_token
+    } else {
+      user.value = null
+      accessToken.value = null
+    }
+  })
+
+  // Load the user session on startup
+  loadUserOnStartup()
 
   return {
     user,
