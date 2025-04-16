@@ -27,7 +27,7 @@ const handleLogout = async () => {
                     <NuxtLink to="/">Home</NuxtLink>
                 </li>
                 <li>
-                    <NuxtLink to="/about">About</NuxtLink>
+                    <NuxtLink to="/all-recipes">All Recipes</NuxtLink>
                 </li>
                 <li v-if="user">
                     <NuxtLink to="/my-recipes">My Recipes</NuxtLink>
