@@ -29,5 +29,6 @@ const handleLogin = async () => {
             <button class="bg-green-500 text-white px-4 py-2 rounded" type="submit">Login</button>
         </form>
         <p v-if="error" class="text-red-500 mt-2">{{ error }}</p>
+        <p>Don't have an account yet? <NuxtLink to='/sign-up'>Sign up</NuxtLink></p>
     </div>
 </template>

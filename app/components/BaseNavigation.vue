@@ -19,8 +19,7 @@ const handleLogout = async () => {
     <header class="py-4 border-b">
         <nav class="flex container items-center">
             <NuxtLink to="/" class="flex gap-1 items-center">
-                <NuxtImg height="56px" src="/icon-green.png" alt="" />
-                <span class="text-3xl font-bold">Nuxtcipes</span>
+                <NuxtImg height="50px" src="/logo.svg" alt="" />
             </NuxtLink>
             <ul class="flex gap-6 ml-auto text-xl font-bold capitalize">
                 <li>
