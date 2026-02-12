@@ -1,14 +1,5 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth';
-import { createClient } from '@supabase/supabase-js';
-import { ref } from 'vue'
-import type { Database } from '~~/types/supabase';
-import { useRouter } from 'vue-router';
 
-type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
-
-const config = useRuntimeConfig()
-const supabase = createClient(config.public.supabaseUrl, config.public.supabaseKey)
 const router = useRouter()
 const { user } = useAuth()
 
@@ -31,8 +22,8 @@ const rawForm = ref({
 
 async function submitRecipe() {
     if (!user.value) {
-        console.error('User is not logged in!')
-        return
+        console.error('User is not logged in!');
+        return;
     }
 
     const form = {
@@ -44,14 +35,19 @@ async function submitRecipe() {
         userId: user.value.id
     };
 
-    const { error } = await supabase.from('recipes').insert([form]);
-
-    if (error) {
-        console.error('Error adding recipe:', error.message);
-        return;
+    try {
+        const res = await fetch('http://localhost:4000/api/recipes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(form),
+        });
+        if (!res.ok) throw new Error('Failed to add recipe');
+        router.push('/');
+    } catch (err: any) {
+        console.error('Error adding recipe:', err.message);
     }
-
-    router.push('/')
 }
 </script>
 

@@ -2,49 +2,32 @@
 definePageMeta({
     middleware: 'auth-redirect'
 })
-import { onMounted } from 'vue'
-import { createClient } from '@supabase/supabase-js'
-import { useAuth } from '~/composables/useAuth'
-import RecipeCard from '~/components/RecipeCard.vue'
-import type { Database } from '~~/types/supabase'
 
-type Recipe = Database['public']['Tables']['recipes']['Row']
-
-const config = useRuntimeConfig()
-const supabase = createClient(config.public.supabaseUrl, config.public.supabaseKey)
-
-const { user, fetchUser } = useAuth()
-
-const recipes = ref<Recipe[]>([])
-const error = ref<string | null>(null)
+const { user, fetchUser } = useAuth();
+const recipes = ref<any[]>([]);
+const error = ref<string | null>(null);
 
 const fetchUserRecipes = async () => {
     if (!user.value) {
-        console.error('User is not logged in!')
-        return
+        console.error('User is not logged in!');
+        return;
     }
-
-    const { data, error: err } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('userId', user.value.id)
-        .order('created_at', { ascending: false })
-
-    if (err) {
-        console.error('Error fetching user recipes:', err.message)
-        error.value = err.message
-    } else {
-        recipes.value = data
+    try {
+        const res = await fetch('http://localhost:4000/api/recipes');
+        if (!res.ok) throw new Error('Failed to fetch recipes');
+        const data = await res.json();
+        recipes.value = data.filter((r: any) => r.userId === user.value.id);
+        console.log('User recipes:', recipes.value);
+    } catch (err: any) {
+        error.value = err.message || 'Error fetching user recipes';
     }
-
-    console.log('User recipes:', data)
-}
+};
 
 onMounted(async () => {
     if (user.value) {
-        await fetchUserRecipes()
+        await fetchUserRecipes();
     }
-})
+});
 
 </script>
 

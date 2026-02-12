@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
 import { ref, onMounted } from 'vue';
-import { useSupabase } from '~/composables/useSupabase';
+// import { useSupabase } from '~/composables/useSupabase';
 import { useSeoMeta } from '#imports';
 import { useAuth } from '~/composables/useAuth'
 
@@ -12,35 +12,34 @@ const { id } = route.params;
 const recipe = ref<any | null>(null);
 const error = ref<string | null>(null);
 
-const supabase = useSupabase();
+// const supabase = useSupabase();
 const { user, fetchUser } = useAuth()
 
 onMounted(async () => {
     try {
-        const { data, error: err } = await supabase
-            .from('recipes')
-            .select('*')
-            .eq('id', id)
-            .single();
+    const res = await fetch(`http://localhost:4000/api/recipes`);
+    if (!res.ok) throw new Error('Failed to fetch recipes');
+    const data = await res.json();
+    // Find recipe by id
+    const found = data.find((r: any) => r.id === Number(id));
+    if (!found) {
+      error.value = 'Recipe not found';
+      return;
+    }
+    recipe.value = found;
 
-        if (err) {
-            error.value = `Error fetching recipe: ${err.message}`;
-        } else {
-            recipe.value = data;
-
-            useSeoMeta({
-                title: recipe.value?.name || 'Recipe',
-                description: recipe.value?.description || 'Delicious recipe for you to try!',
-                ogTitle: recipe.value?.name || 'Recipe',
-                ogDescription: recipe.value?.description || 'Delicious recipe for you to try!',
-                ogImage: recipe.value?.image || '/default-image.jpg',
-                ogUrl: `https://yourdomain.com/recipes/${recipe.value?.id}`,
-                twitterTitle: recipe.value?.name || 'Recipe',
-                twitterDescription: recipe.value?.description || 'Delicious recipe for you to try!',
-                twitterImage: recipe.value?.image || '/default-image.jpg',
-                twitterCard: 'summary_large_image',
-            });
-        }
+        useSeoMeta({
+          title: recipe.value?.name || 'Recipe',
+          description: recipe.value?.description || 'Delicious recipe for you to try!',
+          ogTitle: recipe.value?.name || 'Recipe',
+          ogDescription: recipe.value?.description || 'Delicious recipe for you to try!',
+          ogImage: recipe.value?.image || '/default-image.jpg',
+          ogUrl: `https://yourdomain.com/recipes/${recipe.value?.id}`,
+          twitterTitle: recipe.value?.name || 'Recipe',
+          twitterDescription: recipe.value?.description || 'Delicious recipe for you to try!',
+          twitterImage: recipe.value?.image || '/default-image.jpg',
+          twitterCard: 'summary_large_image',
+        });
     } catch (err: unknown) {
         if (err instanceof Error) {
             error.value = `Unexpected error: ${err.message}`;
@@ -53,16 +52,7 @@ onMounted(async () => {
 const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this recipe?')) return
 
-    const { error: deleteError } = await supabase
-        .from('recipes')
-        .delete()
-        .eq('id', id)
-
-    if (deleteError) {
-        console.error('Error deleting recipe:', deleteError.message)
-    } else {
-        router.push('/')
-    }
+    // Supabase removed; deletion handled by Express backend above
 }
 </script>
 
