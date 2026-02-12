@@ -1,9 +1,26 @@
 <script setup lang="ts">
 
+interface RawRecipeForm {
+    name: string;
+    prepTimeMinutes: number | null;
+    cookTimeMinutes: number | null;
+    servings: number | null;
+    difficulty: string;
+    cuisine: string;
+    caloriesPerServing: number | null;
+    image: string;
+    rating: number | null;
+    reviewCount: number | null;
+    ingredients: string;
+    instructions: string;
+    tags: string;
+    mealType: string;
+}
+
 const router = useRouter()
 const { user } = useAuth()
 
-const rawForm = ref({
+const rawForm = ref<RawRecipeForm>({
     name: '',
     prepTimeMinutes: null,
     cookTimeMinutes: null,
@@ -28,18 +45,20 @@ async function submitRecipe() {
 
     const form = {
         ...rawForm.value,
-        ingredients: rawForm.value.ingredients.split('\n').map(ingredient => ingredient.trim()),
-        instructions: rawForm.value.instructions.split('\n').map(instruction => instruction.trim()),
-        tags: rawForm.value.tags.split('\n').map(tag => tag.trim()),
-        mealType: rawForm.value.mealType.split('\n').map(type => type.trim()),
+        ingredients: rawForm.value.ingredients.split('\n').map((ingredient: string) => ingredient.trim()),
+        instructions: rawForm.value.instructions.split('\n').map((instruction: string) => instruction.trim()),
+        tags: rawForm.value.tags.split('\n').map((tag: string) => tag.trim()),
+        mealType: rawForm.value.mealType.split('\n').map((type: string) => type.trim()),
         userId: user.value.id
     };
 
     try {
+        const token = localStorage.getItem('jwt');
         const res = await fetch('http://localhost:4000/api/recipes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
             },
             body: JSON.stringify(form),
         });
@@ -84,7 +103,6 @@ async function submitRecipe() {
             <input type="number" v-model="rawForm.caloriesPerServing" placeholder="Calories per Serving" class="input"
                 required />
 
-            <!-- Tags -->
             <div>
                 <label class="block font-semibold mb-1">Tags (one per line)</label>
                 <textarea v-model="rawForm.tags" placeholder="e.g. Vegan, Gluten-Free" class="input" required

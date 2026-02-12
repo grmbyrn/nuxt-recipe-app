@@ -5,29 +5,51 @@ export const useAuth = () => {
   const accessToken = useState<string | null>('accessToken', () => null);
 
   const fetchUser = async () => {
-    // TODO: Implement real auth logic
-    user.value = null;
-    accessToken.value = null;
+    // Optionally implement session restore from localStorage
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      accessToken.value = token;
+      // Optionally decode token for user info
+      user.value = {};
+    } else {
+      user.value = null;
+      accessToken.value = null;
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    // TODO: Implement real sign up logic
-    user.value = { email };
-    accessToken.value = 'dummy-token';
+    const res = await fetch('http://localhost:4000/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error('Sign up failed');
+    // Optionally auto-login after signup
+    await login(email, password);
   };
 
   const login = async (email: string, password: string) => {
-    // TODO: Implement real login logic
+    const res = await fetch('http://localhost:4000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Login failed');
+    }
+    const data = await res.json();
+    accessToken.value = data.token;
+    localStorage.setItem('jwt', data.token);
     user.value = { email };
-    accessToken.value = 'dummy-token';
   };
 
   const logout = async () => {
     user.value = null;
     accessToken.value = null;
+    localStorage.removeItem('jwt');
   };
 
-  // Load the user session on startup
   fetchUser();
 
   return {

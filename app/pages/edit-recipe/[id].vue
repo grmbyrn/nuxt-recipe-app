@@ -5,10 +5,27 @@ const router = useRouter();
 const { user, fetchUser } = useAuth();
 const id = route.params.id as string;
 
+interface RawRecipeForm {
+  name: string;
+  prepTimeMinutes: number | null;
+  cookTimeMinutes: number | null;
+  servings: number | null;
+  difficulty: string;
+  cuisine: string;
+  caloriesPerServing: number | null;
+  image: string;
+  rating: number | null;
+  reviewCount: number | null;
+  ingredients: string;
+  instructions: string;
+  tags: string;
+  mealType: string;
+}
+
 const error = ref<string | null>(null);
 const loading = ref(true);
 
-const rawForm = ref({
+const rawForm = ref<RawRecipeForm>({
   name: '',
   prepTimeMinutes: null,
   cookTimeMinutes: null,
@@ -65,25 +82,27 @@ async function updateRecipe() {
 
   const form = {
     ...rawForm.value,
-    ingredients: rawForm.value.ingredients.split('\n').map(i => i.trim()),
-    instructions: rawForm.value.instructions.split('\n').map(i => i.trim()),
-    tags: rawForm.value.tags.split('\n').map(i => i.trim()),
-    mealType: rawForm.value.mealType.split('\n').map(i => i.trim()),
+    ingredients: rawForm.value.ingredients.split('\n').map((i: string) => i.trim()),
+    instructions: rawForm.value.instructions.split('\n').map((i: string) => i.trim()),
+    tags: rawForm.value.tags.split('\n').map((i: string) => i.trim()),
+    mealType: rawForm.value.mealType.split('\n').map((i: string) => i.trim()),
   };
 
-  try {
-    const res = await fetch(`http://localhost:4000/api/recipes/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(form),
-    });
-    if (!res.ok) throw new Error('Failed to update recipe');
-    router.push(`/recipes/${id}`);
-  } catch (err: any) {
-    error.value = err.message || 'Error updating recipe';
-  }
+    try {
+      const token = localStorage.getItem('jwt');
+      const res = await fetch(`http://localhost:4000/api/recipes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Failed to update recipe');
+      router.push(`/recipes/${id}`);
+    } catch (err: any) {
+      error.value = err.message || 'Error updating recipe';
+    }
 }
 </script>
 

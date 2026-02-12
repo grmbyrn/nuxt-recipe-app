@@ -1,7 +1,6 @@
 <script setup lang='ts'>
 
 import RecipeCard from '~/components/RecipeCard.vue';
-import { ref, onMounted } from 'vue';
 
 interface Recipe {
     id: number;

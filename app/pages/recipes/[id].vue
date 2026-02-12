@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
-// import { useSupabase } from '~/composables/useSupabase';
-import { useSeoMeta } from '#imports';
 import { useAuth } from '~/composables/useAuth'
 
 const route = useRoute();
@@ -12,7 +8,6 @@ const { id } = route.params;
 const recipe = ref<any | null>(null);
 const error = ref<string | null>(null);
 
-// const supabase = useSupabase();
 const { user, fetchUser } = useAuth()
 
 onMounted(async () => {
@@ -50,9 +45,20 @@ onMounted(async () => {
 });
 
 const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this recipe?')) return
-
-    // Supabase removed; deletion handled by Express backend above
+        if (!confirm('Are you sure you want to delete this recipe?')) return
+        const token = localStorage.getItem('jwt');
+        try {
+            const res = await fetch(`http://localhost:4000/api/recipes/${recipe.value.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
+            if (!res.ok) throw new Error('Failed to delete recipe');
+            router.push('/');
+        } catch (err: any) {
+            error.value = err.message;
+        }
 }
 </script>
 
