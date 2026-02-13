@@ -8,10 +8,6 @@ export default defineNuxtConfig({
 
   experimental: {
     sharedPrerenderData: false,
-    compileTemplate: true,
-    resetAsyncDataToUndefined: true,
-    templateUtils: true,
-    relativeWatchPaths: true,
     defaults: {
       useAsyncData: {
         deep: true
@@ -40,18 +36,6 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Montserrat: true
-    }
-  },
-
-  runtimeConfig: {
-    // Only available server-side by default
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseKey: process.env.SUPABASE_KEY,
-
-    public: {
-      // Available client-side too
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_KEY
     }
   }
 })

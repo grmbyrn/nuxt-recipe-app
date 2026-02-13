@@ -5,15 +5,17 @@ export const useAuth = () => {
   const accessToken = useState<string | null>('accessToken', () => null);
 
   const fetchUser = async () => {
-    // Optionally implement session restore from localStorage
-    const token = localStorage.getItem('jwt');
-    if (token) {
-      accessToken.value = token;
-      // Optionally decode token for user info
-      user.value = {};
-    } else {
-      user.value = null;
-      accessToken.value = null;
+    if (process.client) {
+      // Optionally implement session restore from localStorage
+      const token = localStorage.getItem('jwt');
+      if (token) {
+        accessToken.value = token;
+        // Optionally decode token for user info
+        user.value = {};
+      } else {
+        user.value = null;
+        accessToken.value = null;
+      }
     }
   };
 
@@ -25,7 +27,9 @@ export const useAuth = () => {
     });
     if (!res.ok) throw new Error('Sign up failed');
     // Optionally auto-login after signup
-    await login(email, password);
+    if (process.client) {
+      await login(email, password);
+    }
   };
 
   const login = async (email: string, password: string) => {
@@ -39,18 +43,24 @@ export const useAuth = () => {
       throw new Error(err.error || 'Login failed');
     }
     const data = await res.json();
-    accessToken.value = data.token;
-    localStorage.setItem('jwt', data.token);
-    user.value = { email };
+    if (process.client) {
+      accessToken.value = data.token;
+      localStorage.setItem('jwt', data.token);
+      user.value = { email };
+    }
   };
 
   const logout = async () => {
-    user.value = null;
-    accessToken.value = null;
-    localStorage.removeItem('jwt');
+    if (process.client) {
+      user.value = null;
+      accessToken.value = null;
+      localStorage.removeItem('jwt');
+    }
   };
 
-  fetchUser();
+  if (process.client) {
+    fetchUser();
+  }
 
   return {
     user,
