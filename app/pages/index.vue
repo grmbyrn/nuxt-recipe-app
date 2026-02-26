@@ -1,29 +1,38 @@
 <script setup lang="ts">
-import RecipeCard from '~/components/RecipeCard.vue';
-import { useSupabase } from '~/composables/useSupabase'
-import { ref, onMounted } from 'vue'
-import type { Database } from '~~/types/supabase';
 
-type Recipe = Database['public']['Tables']['recipes']['Row']
 
-const recipes = ref<Recipe[]>([])
-const error = ref<string | null>(null)
+interface Recipe {
+    id: number;
+    name: string;
+    ingredients: string[];
+    instructions: string[];
+    prepTimeMinutes: number;
+    cookTimeMinutes: number;
+    servings: number;
+    difficulty: string;
+    cuisine: string;
+    caloriesPerServing: number;
+    tags: string[];
+    userId: number;
+    image: string;
+    rating: number;
+    reviewCount: number;
+    mealType: string[];
+}
 
-const supabase = useSupabase()
+const recipes = ref<Recipe[]>([]);
+const error = ref<string | null>(null);
 
 onMounted(async () => {
-    const { data, error: err } = await supabase
-        .from('recipes')
-        .select()
-        .order('created_at', { ascending: false })
-        .limit(6);
-
-    if (err) {
-        error.value = err.message
-    } else {
-        recipes.value = data
+    try {
+        const res = await fetch('http://localhost:4000/api/recipes');
+        if (!res.ok) throw new Error('Failed to fetch recipes');
+        const data = await res.json();
+        recipes.value = data;
+    } catch (err: any) {
+        error.value = err.message || 'Error fetching recipes';
     }
-})
+});
 
 useSeoMeta({
     title: "Nuxtcipes",

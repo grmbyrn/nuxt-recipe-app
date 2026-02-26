@@ -1,67 +1,66 @@
-import { useSupabase } from './useSupabase'
-import type { User } from '@supabase/supabase-js'
 
+// Stubbed auth composable for migration
 export const useAuth = () => {
-  const supabase = useSupabase()
-  const user = useState<User | null>('user', () => null)
-  const accessToken = useState<string | null>('accessToken', () => null)
+  const user = useState<any | null>('user', () => null);
+  const accessToken = useState<string | null>('accessToken', () => null);
 
   const fetchUser = async () => {
-    const { data: sessionData, error } = await supabase.auth.getSession()
-  
-    if (error) {
-      console.error('Error fetching session:', error)
-      user.value = null
-      accessToken.value = null
-      return
+    if (process.client) {
+      // Optionally implement session restore from localStorage
+      const token = localStorage.getItem('jwt');
+      if (token) {
+        accessToken.value = token;
+        // Optionally decode token for user info
+        user.value = {};
+      } else {
+        user.value = null;
+        accessToken.value = null;
+      }
     }
-  
-    const session = sessionData?.session
-    if (session && session.user) {
-      user.value = session.user
-      accessToken.value = session.access_token
-    } else {
-      user.value = null
-      accessToken.value = null
-    }
-  }
-
-  // On app load, we should immediately check the session.
-  const loadUserOnStartup = () => {
-    fetchUser() // Get session when app initializes
-  }
+  };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) throw error
-    await fetchUser()
-  }
+    const res = await fetch('http://localhost:4000/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error('Sign up failed');
+    // Optionally auto-login after signup
+    if (process.client) {
+      await login(email, password);
+    }
+  };
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    await fetchUser()
-  }
+    const res = await fetch('http://localhost:4000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Login failed');
+    }
+    const data = await res.json();
+    if (process.client) {
+      accessToken.value = data.token;
+      localStorage.setItem('jwt', data.token);
+      user.value = { email };
+    }
+  };
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    user.value = null
-    accessToken.value = null
-  }
-
-  // Listen for auth state changes to update the user state on page reload
-  supabase.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) {
-      user.value = session.user
-      accessToken.value = session.access_token
-    } else {
-      user.value = null
-      accessToken.value = null
+    if (process.client) {
+      user.value = null;
+      accessToken.value = null;
+      localStorage.removeItem('jwt');
     }
-  })
+  };
 
-  // Load the user session on startup
-  loadUserOnStartup()
+  if (process.client) {
+    fetchUser();
+  }
 
   return {
     user,
@@ -69,5 +68,5 @@ export const useAuth = () => {
     signUp,
     login,
     logout
-  }
-}
+  };
+};

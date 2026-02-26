@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { createClient } from '@supabase/supabase-js';
-import { useAuth } from '~/composables/useAuth';
-import type { Database } from '~~/types/supabase';
 
-type Recipe = Database['public']['Tables']['recipes']['Row']
-
-const config = useRuntimeConfig();
-const supabase = createClient(config.public.supabaseUrl, config.public.supabaseKey);
 const route = useRoute();
 const router = useRouter();
 const { user, fetchUser } = useAuth();
 const id = route.params.id as string;
 
+interface RawRecipeForm {
+  name: string;
+  prepTimeMinutes: number | null;
+  cookTimeMinutes: number | null;
+  servings: number | null;
+  difficulty: string;
+  cuisine: string;
+  caloriesPerServing: number | null;
+  image: string;
+  rating: number | null;
+  reviewCount: number | null;
+  ingredients: string;
+  instructions: string;
+  tags: string;
+  mealType: string;
+}
+
 const error = ref<string | null>(null);
 const loading = ref(true);
 
-const rawForm = ref({
+const rawForm = ref<RawRecipeForm>({
   name: '',
   prepTimeMinutes: null,
   cookTimeMinutes: null,
@@ -36,35 +44,34 @@ const rawForm = ref({
 
 onMounted(async () => {
   await fetchUser();
-
-  const { data, error: fetchError } = await supabase
-    .from('recipes')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (fetchError) {
-    error.value = `Error fetching recipe: ${fetchError.message}`;
+  try {
+    const res = await fetch('http://localhost:4000/api/recipes');
+    if (!res.ok) throw new Error('Failed to fetch recipes');
+    const data = await res.json();
+    const found = data.find((r: any) => r.id === Number(id));
+    if (!found) {
+      error.value = 'Recipe not found';
+      loading.value = false;
+      return;
+    }
+    if (found.userId !== user.value?.id) {
+      error.value = 'You are not authorized to edit this recipe.';
+      loading.value = false;
+      return;
+    }
+    // Populate form
+    rawForm.value = {
+      ...found,
+      ingredients: (found.ingredients || []).join('\n'),
+      instructions: (found.instructions || []).join('\n'),
+      tags: (found.tags || []).join('\n'),
+      mealType: (found.mealType || []).join('\n')
+    };
     loading.value = false;
-    return;
-  }
-
-  if (data.userId !== user.value?.id) {
-    error.value = 'You are not authorized to edit this recipe.';
+  } catch (err: any) {
+    error.value = err.message || 'Error fetching recipe';
     loading.value = false;
-    return;
   }
-
-  // Populate form
-  rawForm.value = {
-    ...data,
-    ingredients: (data.ingredients || []).join('\n'),
-    instructions: (data.instructions || []).join('\n'),
-    tags: (data.tags || []).join('\n'),
-    mealType: (data.mealType || []).join('\n')
-  };
-
-  loading.value = false;
 });
 
 async function updateRecipe() {
@@ -75,24 +82,27 @@ async function updateRecipe() {
 
   const form = {
     ...rawForm.value,
-    ingredients: rawForm.value.ingredients.split('\n').map(i => i.trim()),
-    instructions: rawForm.value.instructions.split('\n').map(i => i.trim()),
-    tags: rawForm.value.tags.split('\n').map(i => i.trim()),
-    mealType: rawForm.value.mealType.split('\n').map(i => i.trim()),
+    ingredients: rawForm.value.ingredients.split('\n').map((i: string) => i.trim()),
+    instructions: rawForm.value.instructions.split('\n').map((i: string) => i.trim()),
+    tags: rawForm.value.tags.split('\n').map((i: string) => i.trim()),
+    mealType: rawForm.value.mealType.split('\n').map((i: string) => i.trim()),
   };
 
-  const { error: updateError } = await supabase
-    .from('recipes')
-    .update(form)
-    .eq('id', id);
-
-  if (updateError) {
-    console.error('Error updating recipe:', updateError.message);
-    error.value = updateError.message;
-    return;
-  }
-
-  router.push(`/recipes/${id}`);
+    try {
+      const token = localStorage.getItem('jwt');
+      const res = await fetch(`http://localhost:4000/api/recipes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Failed to update recipe');
+      router.push(`/recipes/${id}`);
+    } catch (err: any) {
+      error.value = err.message || 'Error updating recipe';
+    }
 }
 </script>
 

@@ -1,28 +1,35 @@
 # 🍽️ Nuxt Recipe App
 
-A full-featured recipe sharing platform built with [Nuxt 3](https://nuxt.com/), [Supabase](https://supabase.com/), and [Tailwind CSS](https://tailwindcss.com/). Users can browse recipes, sign up or log in, and create, edit, or delete their own recipes.
+A full-featured recipe sharing platform built with [Nuxt 3](https://nuxt.com/), a custom [Express](https://expressjs.com/) backend, [PostgreSQL](https://www.postgresql.org/), and [Tailwind CSS](https://tailwindcss.com/). Users can browse recipes, sign up or log in, and create, edit, or delete their own recipes.
 
 ---
 
 ## 🚀 Features
 
-- 🔐 User authentication with Supabase
+- 🔐 User authentication with JWT (JSON Web Tokens)
 - 📚 View community-shared recipes
 - ✍️ Add, edit, and delete your own recipes
 - 🖼️ Responsive UI with Tailwind CSS and Nuxt Image
 - 🎨 Custom icons and Google Fonts integration
+- 🗄️ Custom Express REST API with PostgreSQL
 
 ---
 
 ## 🛠️ Tech Stack
 
+### Frontend
 - [Nuxt 3](https://nuxt.com/)
 - [Vue 3](https://vuejs.org/)
-- [Supabase](https://supabase.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [@nuxt/image](https://image.nuxt.com/)
 - [@nuxt/icon](https://icon.nuxt.com/)
 - [@nuxtjs/google-fonts](https://github.com/nuxt-modules/google-fonts)
+
+### Backend
+- [Express](https://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/) (via `pg`)
+- [JWT](https://jwt.io/) for authentication
+- [bcrypt](https://github.com/kelektiv/node.bcrypt.js) for password hashing
 
 ---
 
@@ -35,65 +42,79 @@ git clone https://github.com/your-username/nuxt-recipe-app.git
 cd nuxt-recipe-app
 ```
 
-### Install dependencies
+### Install frontend dependencies
 
 ```bash
 npm install
-# or
-yarn install
+```
+
+### Install backend dependencies
+
+```bash
+cd backend
+npm install
 ```
 
 ### Environment Variables
 
-Create a `.env` file in the root directory with your Supabase credentials:
+Create a `.env` file in the `backend/` directory:
 
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL=postgresql://user:password@localhost:5432/recipe_app
+JWT_SECRET=your-jwt-secret
+PORT=4000
 ```
 
-### Development
+### Running the app
 
-To start the development server:
+**1. Start the backend server:**
+
+```bash
+cd backend
+npx tsc && node dist/index.js
+```
+
+The API will be available at http://localhost:4000.
+
+**2. Start the Nuxt dev server:**
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 Open http://localhost:3000 in your browser to view the application.
 
-### Build the Production:
+### Build for Production
 
 ```bash
 npm run build
-# or
-yarn build
 ```
 
 Preview the production build:
 
 ```bash
 npm run preview
-# or
-yarn preview
 ```
 
 ## 📁 Project Structure
 
-```bash
-├── assets/              # Uncompiled assets like images, fonts
-├── components/          # Vue components
-├── composables/         # Vue composables (composable logic)
-├── layouts/             # Application layouts
-├── pages/               # Route-based pages
+```
+├── app/
+│   ├── components/      # Vue components
+│   ├── composables/     # Vue composables (auth, etc.)
+│   ├── layouts/         # Application layouts
+│   ├── middleware/       # Route middleware (auth guards)
+│   ├── pages/           # Route-based pages
+│   └── app.vue          # Root component
+├── backend/
+│   └── src/
+│       └── index.ts     # Express API server
+├── plugins/             # Nuxt plugins
 ├── public/              # Static files
-├── server/              # Server-side logic
-├── app.vue              # Root component
+├── types/               # TypeScript type definitions
 ├── nuxt.config.ts       # Nuxt configuration
-├── tailwind.config.ts   # Tailwind CSS configuration
-└── .env                 # Environment variables
+├── tailwind.config.js   # Tailwind CSS configuration
+└── package.json
 ```
 
 ## 📄 License
@@ -103,8 +124,9 @@ This project is licensed under the [MIT License](LICENSE).
 ## 🙌 Acknowledgments
 
 - [Nuxt](https://nuxt.com/)
-- [Supabase](https://supabase.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
 - [Vue 3](https://vuejs.org/)
+- [Express](https://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
 - [Nuxt Image Module](https://image.nuxtjs.org/)
 - [Nuxt Icon Module](https://icon.nuxtjs.org/)

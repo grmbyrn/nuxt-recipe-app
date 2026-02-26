@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { useAuth } from '~/composables/useAuth';
-import { createClient } from '@supabase/supabase-js';
-import { ref } from 'vue'
-import type { Database } from '~~/types/supabase';
-import { useRouter } from 'vue-router';
 
-type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
+interface RawRecipeForm {
+    name: string;
+    prepTimeMinutes: number | null;
+    cookTimeMinutes: number | null;
+    servings: number | null;
+    difficulty: string;
+    cuisine: string;
+    caloriesPerServing: number | null;
+    image: string;
+    rating: number | null;
+    reviewCount: number | null;
+    ingredients: string;
+    instructions: string;
+    tags: string;
+    mealType: string;
+}
 
-const config = useRuntimeConfig()
-const supabase = createClient(config.public.supabaseUrl, config.public.supabaseKey)
 const router = useRouter()
 const { user } = useAuth()
 
-const rawForm = ref({
+const rawForm = ref<RawRecipeForm>({
     name: '',
     prepTimeMinutes: null,
     cookTimeMinutes: null,
@@ -31,27 +39,34 @@ const rawForm = ref({
 
 async function submitRecipe() {
     if (!user.value) {
-        console.error('User is not logged in!')
-        return
+        console.error('User is not logged in!');
+        return;
     }
 
     const form = {
         ...rawForm.value,
-        ingredients: rawForm.value.ingredients.split('\n').map(ingredient => ingredient.trim()),
-        instructions: rawForm.value.instructions.split('\n').map(instruction => instruction.trim()),
-        tags: rawForm.value.tags.split('\n').map(tag => tag.trim()),
-        mealType: rawForm.value.mealType.split('\n').map(type => type.trim()),
+        ingredients: rawForm.value.ingredients.split('\n').map((ingredient: string) => ingredient.trim()),
+        instructions: rawForm.value.instructions.split('\n').map((instruction: string) => instruction.trim()),
+        tags: rawForm.value.tags.split('\n').map((tag: string) => tag.trim()),
+        mealType: rawForm.value.mealType.split('\n').map((type: string) => type.trim()),
         userId: user.value.id
     };
 
-    const { error } = await supabase.from('recipes').insert([form]);
-
-    if (error) {
-        console.error('Error adding recipe:', error.message);
-        return;
+    try {
+        const token = localStorage.getItem('jwt');
+        const res = await fetch('http://localhost:4000/api/recipes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
+            body: JSON.stringify(form),
+        });
+        if (!res.ok) throw new Error('Failed to add recipe');
+        router.push('/');
+    } catch (err: any) {
+        console.error('Error adding recipe:', err.message);
     }
-
-    router.push('/')
 }
 </script>
 
@@ -88,7 +103,6 @@ async function submitRecipe() {
             <input type="number" v-model="rawForm.caloriesPerServing" placeholder="Calories per Serving" class="input"
                 required />
 
-            <!-- Tags -->
             <div>
                 <label class="block font-semibold mb-1">Tags (one per line)</label>
                 <textarea v-model="rawForm.tags" placeholder="e.g. Vegan, Gluten-Free" class="input" required
