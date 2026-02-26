@@ -7,8 +7,8 @@ defineProps<{
 </script>
 
 <template>
-    <div class="flex flex-col shadow rounded-md">
-        <NuxtImg :src="recipe.image" alt="" class="rounded-t-md" sizes="xs:100vw sm:50vw lg:400px" format="webp"
+    <div class="flex flex-col shadow rounded-md min-w-0">
+        <NuxtImg :src="recipe.image" alt="" class="rounded-t-md h-48 object-cover" sizes="xs:100vw sm:50vw lg:400px" format="webp"
             densities="x1" />
         <div class="flex flex-col py-6 px-4 flex-1">
             <p class="text-xl lg:text-2xl font-semibold mb-2">{{ recipe.name }}</p>

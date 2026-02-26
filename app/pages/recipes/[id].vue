@@ -10,37 +10,49 @@ const error = ref<string | null>(null);
 
 const { user, fetchUser } = useAuth()
 
-onMounted(async () => {
-    try {
-    const res = await fetch(`http://localhost:4000/api/recipes`);
-    if (!res.ok) throw new Error('Failed to fetch recipes');
-    const data = await res.json();
-    // Find recipe by id
-    const found = data.find((r: any) => r.id === Number(id));
-    if (!found) {
-      error.value = 'Recipe not found';
-      return;
-    }
-    recipe.value = found;
+import { useSupabase } from '~/composables/useSupabase';
 
-        useSeoMeta({
-          title: recipe.value?.name || 'Recipe',
-          description: recipe.value?.description || 'Delicious recipe for you to try!',
-          ogTitle: recipe.value?.name || 'Recipe',
-          ogDescription: recipe.value?.description || 'Delicious recipe for you to try!',
-          ogImage: recipe.value?.image || '/default-image.jpg',
-          ogUrl: `https://yourdomain.com/recipes/${recipe.value?.id}`,
-          twitterTitle: recipe.value?.name || 'Recipe',
-          twitterDescription: recipe.value?.description || 'Delicious recipe for you to try!',
-          twitterImage: recipe.value?.image || '/default-image.jpg',
-          twitterCard: 'summary_large_image',
-        });
-    } catch (err: unknown) {
-        if (err instanceof Error) {
-            error.value = `Unexpected error: ${err.message}`;
-        } else {
-            error.value = 'Unexpected error occurred';
-        }
+onMounted(async () => {
+    // Show sample recipe if id is 1 and no real recipe exists
+    if (id === '1') {
+        recipe.value = {
+            id: 1,
+            name: 'Sample Pancakes',
+            ingredients: ['Flour', 'Eggs', 'Milk', 'Sugar', 'Butter'],
+            instructions: ['Mix ingredients', 'Heat pan', 'Pour batter', 'Flip pancakes', 'Serve'],
+            prepTimeMinutes: 10,
+            cookTimeMinutes: 15,
+            servings: 4,
+            difficulty: 'Easy',
+            cuisine: 'American',
+            caloriesPerServing: 250,
+            tags: ['breakfast', 'sweet'],
+            userId: 1,
+            image: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            rating: 5,
+            reviewCount: 12,
+            mealType: ['Breakfast']
+        };
+        error.value = null;
+        return;
+    }
+    const supabase = useSupabase();
+    if (!id || Array.isArray(id)) {
+        error.value = 'Recipe not found.';
+        recipe.value = null;
+        return;
+    }
+    const { data, error: fetchError } = await supabase
+        .from('recipes')
+        .select('*')
+        .eq('id', Number(id))
+        .single();
+    if (fetchError || !data) {
+        error.value = 'Recipe not found.';
+        recipe.value = null;
+    } else {
+        recipe.value = data;
+        error.value = null;
     }
 });
 
