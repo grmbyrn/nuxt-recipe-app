@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth'
-import { useSupabase } from '~/composables/useSupabase'
+import { useRecipes } from '~/composables/useRecipes'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,7 +10,7 @@ const recipe = ref<any | null>(null)
 const error = ref<string | null>(null)
 
 const { user, fetchUser } = useAuth()
-const supabase = useSupabase()
+const { getRecipeById, deleteRecipe } = useRecipes()
 
 onMounted(async () => {
     await fetchUser()
@@ -42,11 +42,7 @@ onMounted(async () => {
         recipe.value = null;
         return;
     }
-    const { data, error: fetchError } = await supabase
-        .from('recipes')
-        .select('*')
-        .eq('id', Number(id))
-        .single();
+    const { data, error: fetchError } = await getRecipeById(Number(id))
     if (fetchError || !data) {
         error.value = 'Recipe not found.';
         recipe.value = null;
@@ -65,11 +61,7 @@ const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this recipe?')) return
 
     try {
-        const { error: deleteError } = await supabase
-            .from('recipes')
-            .delete()
-            .eq('id', recipe.value.id)
-            .eq('userId', user.value.id)
+        const { error: deleteError } = await deleteRecipe(recipe.value.id)
 
         if (deleteError) {
             throw deleteError

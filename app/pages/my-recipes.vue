@@ -3,10 +3,10 @@ definePageMeta({
     middleware: 'auth-redirect'
 })
 
-import { useSupabase } from '~/composables/useSupabase'
+import { useRecipes } from '~/composables/useRecipes'
 
 const { user, fetchUser } = useAuth()
-const supabase = useSupabase()
+const { getMyRecipes } = useRecipes()
 const recipes = ref<any[]>([])
 const error = ref<string | null>(null)
 
@@ -16,16 +16,11 @@ const fetchUserRecipes = async () => {
         return
     }
     try {
-        const { data, error: fetchError } = await supabase
-            .from('recipes')
-            .select('*')
-            .eq('userId', user.value.id)
+        const { data, error: fetchError } = await getMyRecipes(user.value.id)
 
-        if (fetchError) {
-            throw fetchError
-        }
+        if (fetchError) throw fetchError
 
-        recipes.value = data || []
+        recipes.value = data
     } catch (err: any) {
         error.value = err.message || 'Error fetching user recipes'
     }

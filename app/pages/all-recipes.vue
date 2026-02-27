@@ -1,42 +1,21 @@
 <script setup lang='ts'>
 
-import RecipeCard from '~/components/RecipeCard.vue';
+import RecipeCard from '~/components/RecipeCard.vue'
+import { useRecipes } from '~/composables/useRecipes'
 
-interface Recipe {
-    id: number;
-    name: string;
-    ingredients: string[];
-    instructions: string[];
-    prepTimeMinutes: number;
-    cookTimeMinutes: number;
-    servings: number;
-    difficulty: string;
-    cuisine: string;
-    caloriesPerServing: number;
-    tags: string[];
-    userId: number;
-    image: string;
-    rating: number;
-    reviewCount: number;
-    mealType: string[];
-}
+const recipes = ref<any[]>([])
+const error = ref<string | null>(null)
 
-const recipes = ref<Recipe[]>([]);
-const error = ref<string | null>(null);
-
-import { useSupabase } from '~/composables/useSupabase';
+const { getAllRecipes } = useRecipes()
 
 onMounted(async () => {
-    const supabase = useSupabase();
-    const { data, error: fetchError } = await supabase
-        .from('recipes')
-        .select('*');
+    const { data, error: fetchError } = await getAllRecipes()
     if (fetchError) {
-        error.value = fetchError.message;
+        error.value = fetchError.message
     } else {
-        recipes.value = data || [];
+        recipes.value = data
     }
-});
+})
 </script>
 
 <template>
@@ -61,7 +40,7 @@ onMounted(async () => {
                 cuisine: 'American',
                 caloriesPerServing: 250,
                 tags: ['breakfast', 'sweet'],
-                userId: 1,
+                userId: 'sample-user',
                 image: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                 rating: 5,
                 reviewCount: 12,

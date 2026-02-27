@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { useSupabase } from '~/composables/useSupabase'
+import { useRecipes } from '~/composables/useRecipes'
 
 interface RawRecipeForm {
     name: string;
@@ -21,7 +21,7 @@ interface RawRecipeForm {
 
 const router = useRouter()
 const { user } = useAuth()
-const supabase = useSupabase()
+const { createRecipe } = useRecipes()
 
 const error = ref<string | null>(null)
 const submitting = ref(false)
@@ -64,13 +64,9 @@ async function submitRecipe() {
     };
 
     try {
-        const { error: insertError } = await supabase
-            .from('recipes')
-            .insert([form])
+        const { error: insertError } = await createRecipe(form)
 
-        if (insertError) {
-            throw insertError
-        }
+        if (insertError) throw insertError
 
         router.push('/')
     } catch (err: any) {

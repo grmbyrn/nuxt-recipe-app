@@ -5,8 +5,8 @@ const router = useRouter()
 const { user, fetchUser } = useAuth()
 const id = route.params.id as string
 
-import { useSupabase } from '~/composables/useSupabase'
-const supabase = useSupabase()
+import { useRecipes } from '~/composables/useRecipes'
+const { getRecipeById, updateRecipe } = useRecipes()
 
 interface RawRecipeForm {
   name: string;
@@ -48,11 +48,7 @@ const rawForm = ref<RawRecipeForm>({
 onMounted(async () => {
   await fetchUser()
   try {
-    const { data, error: fetchError } = await supabase
-      .from('recipes')
-      .select('*')
-      .eq('id', Number(id))
-      .single()
+    const { data, error: fetchError } = await getRecipeById(Number(id))
 
     if (fetchError || !data) {
       error.value = 'Recipe not found'
@@ -80,7 +76,7 @@ onMounted(async () => {
   }
 })
 
-async function updateRecipe() {
+async function onUpdateRecipe() {
   if (!user.value) {
     console.error('User not authenticated!')
     return
@@ -94,21 +90,17 @@ async function updateRecipe() {
     mealType: rawForm.value.mealType.split('\n').map((i: string) => i.trim()),
   }
 
-    try {
-      const { error: updateError } = await supabase
-        .from('recipes')
-        .update(form)
-        .eq('id', Number(id))
-        .eq('userId', user.value.id)
+  try {
+    const { error: updateError } = await updateRecipe(Number(id), form)
 
-      if (updateError) {
-        throw updateError
-      }
-
-      router.push(`/recipes/${id}`)
-    } catch (err: any) {
-      error.value = err.message || 'Error updating recipe'
+    if (updateError) {
+      throw updateError
     }
+
+    router.push(`/recipes/${id}`)
+  } catch (err: any) {
+    error.value = err.message || 'Error updating recipe'
+  }
 }
 </script>
 
@@ -118,7 +110,7 @@ async function updateRecipe() {
 
     <div v-if="loading">Loading...</div>
     <div v-else-if="error" class="text-red-600">{{ error }}</div>
-    <form v-else @submit.prevent="updateRecipe" class="grid gap-4">
+    <form v-else @submit.prevent="onUpdateRecipe" class="grid gap-4">
       <input v-model="rawForm.name" placeholder="Name" class="input" required />
 
       <div>
