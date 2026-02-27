@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth'
+import { useSupabase } from '~/composables/useSupabase'
 
-const route = useRoute();
-const router = useRouter();
-const { id } = route.params;
+const route = useRoute()
+const router = useRouter()
+const { id } = route.params
 
-const recipe = ref<any | null>(null);
-const error = ref<string | null>(null);
+const recipe = ref<any | null>(null)
+const error = ref<string | null>(null)
 
 const { user, fetchUser } = useAuth()
-
-import { useSupabase } from '~/composables/useSupabase';
+const supabase = useSupabase()
 
 onMounted(async () => {
+    await fetchUser()
     // Show sample recipe if id is 1 and no real recipe exists
     if (id === '1') {
         recipe.value = {
@@ -36,7 +37,6 @@ onMounted(async () => {
         error.value = null;
         return;
     }
-    const supabase = useSupabase();
     if (!id || Array.isArray(id)) {
         error.value = 'Recipe not found.';
         recipe.value = null;
@@ -57,20 +57,28 @@ onMounted(async () => {
 });
 
 const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this recipe?')) return
-        const token = localStorage.getItem('jwt');
-        try {
-            const res = await fetch(`http://localhost:4000/api/recipes/${recipe.value.id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
-            });
-            if (!res.ok) throw new Error('Failed to delete recipe');
-            router.push('/');
-        } catch (err: any) {
-            error.value = err.message;
+    if (!user.value || !recipe.value || user.value.id !== recipe.value.userId) {
+        error.value = 'You are not authorized to delete this recipe.'
+        return
+    }
+
+    if (!confirm('Are you sure you want to delete this recipe?')) return
+
+    try {
+        const { error: deleteError } = await supabase
+            .from('recipes')
+            .delete()
+            .eq('id', recipe.value.id)
+            .eq('userId', user.value.id)
+
+        if (deleteError) {
+            throw deleteError
         }
+
+        router.push('/')
+    } catch (err: any) {
+        error.value = err.message || 'Failed to delete recipe'
+    }
 }
 </script>
 

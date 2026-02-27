@@ -1,9 +1,12 @@
 <script setup lang="ts">
 
-const route = useRoute();
-const router = useRouter();
-const { user, fetchUser } = useAuth();
-const id = route.params.id as string;
+const route = useRoute()
+const router = useRouter()
+const { user, fetchUser } = useAuth()
+const id = route.params.id as string
+
+import { useSupabase } from '~/composables/useSupabase'
+const supabase = useSupabase()
 
 interface RawRecipeForm {
   name: string;
@@ -22,8 +25,8 @@ interface RawRecipeForm {
   mealType: string;
 }
 
-const error = ref<string | null>(null);
-const loading = ref(true);
+const error = ref<string | null>(null)
+const loading = ref(true)
 
 const rawForm = ref<RawRecipeForm>({
   name: '',
@@ -43,41 +46,44 @@ const rawForm = ref<RawRecipeForm>({
 });
 
 onMounted(async () => {
-  await fetchUser();
+  await fetchUser()
   try {
-    const res = await fetch('http://localhost:4000/api/recipes');
-    if (!res.ok) throw new Error('Failed to fetch recipes');
-    const data = await res.json();
-    const found = data.find((r: any) => r.id === Number(id));
-    if (!found) {
-      error.value = 'Recipe not found';
-      loading.value = false;
-      return;
+    const { data, error: fetchError } = await supabase
+      .from('recipes')
+      .select('*')
+      .eq('id', Number(id))
+      .single()
+
+    if (fetchError || !data) {
+      error.value = 'Recipe not found'
+      loading.value = false
+      return
     }
-    if (found.userId !== user.value?.id) {
-      error.value = 'You are not authorized to edit this recipe.';
-      loading.value = false;
-      return;
+
+    if (data.userId !== user.value?.id) {
+      error.value = 'You are not authorized to edit this recipe.'
+      loading.value = false
+      return
     }
-    // Populate form
+
     rawForm.value = {
-      ...found,
-      ingredients: (found.ingredients || []).join('\n'),
-      instructions: (found.instructions || []).join('\n'),
-      tags: (found.tags || []).join('\n'),
-      mealType: (found.mealType || []).join('\n')
-    };
-    loading.value = false;
+      ...data,
+      ingredients: (data.ingredients || []).join('\n'),
+      instructions: (data.instructions || []).join('\n'),
+      tags: (data.tags || []).join('\n'),
+      mealType: (data.mealType || []).join('\n')
+    }
+    loading.value = false
   } catch (err: any) {
-    error.value = err.message || 'Error fetching recipe';
-    loading.value = false;
+    error.value = err.message || 'Error fetching recipe'
+    loading.value = false
   }
-});
+})
 
 async function updateRecipe() {
   if (!user.value) {
-    console.error('User not authenticated!');
-    return;
+    console.error('User not authenticated!')
+    return
   }
 
   const form = {
@@ -86,22 +92,22 @@ async function updateRecipe() {
     instructions: rawForm.value.instructions.split('\n').map((i: string) => i.trim()),
     tags: rawForm.value.tags.split('\n').map((i: string) => i.trim()),
     mealType: rawForm.value.mealType.split('\n').map((i: string) => i.trim()),
-  };
+  }
 
     try {
-      const token = localStorage.getItem('jwt');
-      const res = await fetch(`http://localhost:4000/api/recipes/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error('Failed to update recipe');
-      router.push(`/recipes/${id}`);
+      const { error: updateError } = await supabase
+        .from('recipes')
+        .update(form)
+        .eq('id', Number(id))
+        .eq('userId', user.value.id)
+
+      if (updateError) {
+        throw updateError
+      }
+
+      router.push(`/recipes/${id}`)
     } catch (err: any) {
-      error.value = err.message || 'Error updating recipe';
+      error.value = err.message || 'Error updating recipe'
     }
 }
 </script>

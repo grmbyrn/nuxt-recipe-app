@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import { useSupabase } from '~/composables/useSupabase'
+
 interface RawRecipeForm {
     name: string;
     prepTimeMinutes: number | null;
@@ -19,6 +21,10 @@ interface RawRecipeForm {
 
 const router = useRouter()
 const { user } = useAuth()
+const supabase = useSupabase()
+
+const error = ref<string | null>(null)
+const submitting = ref(false)
 
 const rawForm = ref<RawRecipeForm>({
     name: '',
@@ -39,9 +45,12 @@ const rawForm = ref<RawRecipeForm>({
 
 async function submitRecipe() {
     if (!user.value) {
-        console.error('User is not logged in!');
+        error.value = 'You must be logged in to add a recipe.'
         return;
     }
+
+    submitting.value = true
+    error.value = null
 
     const form = {
         ...rawForm.value,
@@ -49,23 +58,26 @@ async function submitRecipe() {
         instructions: rawForm.value.instructions.split('\n').map((instruction: string) => instruction.trim()),
         tags: rawForm.value.tags.split('\n').map((tag: string) => tag.trim()),
         mealType: rawForm.value.mealType.split('\n').map((type: string) => type.trim()),
-        userId: user.value.id
+        userId: user.value.id,
+        rating: rawForm.value.rating ?? 0,
+        reviewCount: rawForm.value.reviewCount ?? 0
     };
 
     try {
-        const token = localStorage.getItem('jwt');
-        const res = await fetch('http://localhost:4000/api/recipes', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            },
-            body: JSON.stringify(form),
-        });
-        if (!res.ok) throw new Error('Failed to add recipe');
-        router.push('/');
+        const { error: insertError } = await supabase
+            .from('recipes')
+            .insert([form])
+
+        if (insertError) {
+            throw insertError
+        }
+
+        router.push('/')
     } catch (err: any) {
-        console.error('Error adding recipe:', err.message);
+        console.error('Error adding recipe:', err)
+        error.value = err.message || 'Failed to add recipe'
+    } finally {
+        submitting.value = false
     }
 }
 </script>
@@ -119,8 +131,9 @@ async function submitRecipe() {
             </div>
 
             <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-opacity-80">
-                Add Recipe
+                {{ submitting ? 'Adding…' : 'Add Recipe' }}
             </button>
+            <p v-if="error" class="text-red-600 mt-2">{{ error }}</p>
         </form>
     </div>
 </template>

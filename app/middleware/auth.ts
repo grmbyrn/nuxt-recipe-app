@@ -1,6 +1,7 @@
 import { useAuth } from '~/composables/useAuth'
 
 export default defineNuxtRouteMiddleware(async (to) => {
+  if (process.server) return
   const { user, fetchUser } = useAuth()
   await fetchUser()  // Ensure the session is loaded before checking if the user is authenticated
 

@@ -3,23 +3,31 @@ definePageMeta({
     middleware: 'auth-redirect'
 })
 
-const { user, fetchUser } = useAuth();
-const recipes = ref<any[]>([]);
-const error = ref<string | null>(null);
+import { useSupabase } from '~/composables/useSupabase'
+
+const { user, fetchUser } = useAuth()
+const supabase = useSupabase()
+const recipes = ref<any[]>([])
+const error = ref<string | null>(null)
 
 const fetchUserRecipes = async () => {
     if (!user.value) {
-        console.error('User is not logged in!');
-        return;
+        console.error('User is not logged in!')
+        return
     }
     try {
-        const res = await fetch('http://localhost:4000/api/recipes');
-        if (!res.ok) throw new Error('Failed to fetch recipes');
-        const data = await res.json();
-        recipes.value = data.filter((r: any) => r.userId === user.value.id);
-        console.log('User recipes:', recipes.value);
+        const { data, error: fetchError } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('userId', user.value.id)
+
+        if (fetchError) {
+            throw fetchError
+        }
+
+        recipes.value = data || []
     } catch (err: any) {
-        error.value = err.message || 'Error fetching user recipes';
+        error.value = err.message || 'Error fetching user recipes'
     }
 };
 

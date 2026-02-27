@@ -23,7 +23,7 @@ export interface Database {
           cuisine: string;
           caloriesPerServing: number;
           tags: Json[];
-          userId: number;
+          userId: string;
           image: string;
           rating: number;
           reviewCount: number;
@@ -41,7 +41,7 @@ export interface Database {
           cuisine: string;
           caloriesPerServing: number;
           tags: Json[];
-          userId: number;
+          userId: string;
           image: string;
           rating: number;
           reviewCount: number;
@@ -59,7 +59,7 @@ export interface Database {
           cuisine?: string;
           caloriesPerServing?: number;
           tags?: Json[];
-          userId?: number;
+          userId?: string;
           image?: string;
           rating?: number;
           reviewCount?: number;
