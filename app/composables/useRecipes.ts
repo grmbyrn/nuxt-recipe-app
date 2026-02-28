@@ -1,79 +1,73 @@
-import type { PostgrestError } from '@supabase/supabase-js'
-import type { Database } from '~/types/supabase'
+import { ref } from 'vue';
+import { useSupabase } from '~/composables/useSupabase';
+import type { Recipe } from '../../types/recipe';
 
-type RecipeRow = Database['public']['Tables']['recipes']['Row']
-type RecipeInsert = Database['public']['Tables']['recipes']['Insert']
-type RecipeUpdate = Database['public']['Tables']['recipes']['Update']
+export function useRecipes() {
+  const recipes = ref<Recipe[]>([]);
+  const loading = ref(true);
+  const error = ref<string | null>(null);
 
-export const useRecipes = () => {
-  const supabase = useSupabase()
-
-  const getAllRecipes = async () => {
-    const { data, error } = await supabase
+  async function fetchRecipes(limit = 6) {
+    loading.value = true;
+    error.value = null;
+    const supabase = useSupabase();
+    const { data, error: fetchError } = await supabase
       .from('recipes')
       .select('*')
-      .order('id', { ascending: true })
-
-    return { data: (data ?? []) as RecipeRow[], error }
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (fetchError) {
+      error.value = fetchError.message;
+      recipes.value = [];
+    } else {
+      recipes.value = (data ?? []) as Recipe[];
+    }
+    loading.value = false;
   }
 
-  const getMyRecipes = async (userId: string) => {
+  async function getRecipeById(id: number) {
+    const supabase = useSupabase();
+    const { data, error: fetchError } = await supabase
+      .from('recipes')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return { data: data as Recipe | null, error: fetchError };
+  }
+
+  async function getMyRecipes(userId: string) {
+    const supabase = useSupabase();
     const { data, error } = await supabase
       .from('recipes')
       .select('*')
       .eq('userId', userId)
-      .order('id', { ascending: true })
-
-    return { data: (data ?? []) as RecipeRow[], error }
+      .order('id', { ascending: true });
+    return { data: (data ?? []) as Recipe[], error };
   }
 
-  const getRecipeById = async (id: number) => {
-    const { data, error } = await supabase
+  async function deleteRecipe(id: number) {
+    const supabase = useSupabase();
+    const { error } = await supabase.from('recipes').delete().eq('id', id);
+    return { error };
+  }
+
+  async function getAllRecipes() {
+    const supabase = useSupabase();
+    const { data, error: fetchError } = await supabase
       .from('recipes')
       .select('*')
-      .eq('id', id)
-      .single()
-
-    return { data: data as RecipeRow | null, error }
-  }
-
-  const createRecipe = async (payload: RecipeInsert) => {
-    const { data, error } = await supabase
-      .from('recipes')
-      .insert([payload])
-      .select('*')
-      .single()
-
-    return { data: data as RecipeRow | null, error }
-  }
-
-  const updateRecipe = async (id: number, payload: RecipeUpdate & { userId?: string }) => {
-    const { data, error } = await supabase
-      .from('recipes')
-      .update(payload)
-      .eq('id', id)
-      .select('*')
-      .single()
-
-    return { data: data as RecipeRow | null, error }
-  }
-
-  const deleteRecipe = async (id: number) => {
-    const { error } = await supabase
-      .from('recipes')
-      .delete()
-      .eq('id', id)
-
-    return { error }
+      .order('id', { ascending: true });
+    return { data: (data ?? []) as Recipe[], error: fetchError };
   }
 
   return {
-    getAllRecipes,
-    getMyRecipes,
+    recipes,
+    loading,
+    error,
+    fetchRecipes,
     getRecipeById,
-    createRecipe,
-    updateRecipe,
-    deleteRecipe
-  }
+    getMyRecipes,
+    deleteRecipe,
+    getAllRecipes,
+  };
 }
-

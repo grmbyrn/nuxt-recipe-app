@@ -1,4 +1,5 @@
 # [Live Demo on Vercel](https://nuxt-recipe-app-gamma.vercel.app/)
+
 # 🍽️ Nuxt Recipe App
 
 A modern, full-featured recipe sharing platform built with [Nuxt 3](https://nuxt.com/), [Supabase](https://supabase.com/), and [Tailwind CSS](https://tailwindcss.com/). Users can browse, search, and share recipes, with secure authentication and a beautiful, responsive UI.
@@ -20,6 +21,7 @@ A modern, full-featured recipe sharing platform built with [Nuxt 3](https://nuxt
 ## 🛠️ Tech Stack
 
 **Frontend**
+
 - [Nuxt 3](https://nuxt.com/) (Vue 3, Composition API, TypeScript)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [@nuxt/image](https://image.nuxt.com/)
@@ -27,6 +29,7 @@ A modern, full-featured recipe sharing platform built with [Nuxt 3](https://nuxt
 - [@nuxtjs/google-fonts](https://github.com/nuxt-modules/google-fonts)
 
 **Backend / Data**
+
 - [Supabase](https://supabase.com/) (Postgres, Auth, Storage)
 - Row Level Security (RLS) policies for secure multi-user access
 
@@ -109,14 +112,14 @@ yarn preview
 ## 🧑‍💻 Developer Notes
 
 - **Supabase Setup:**
-	- Create a `recipes` table with appropriate columns and RLS policies (see `/types/supabase.ts` for schema).
-	- Enable Row Level Security and add policies for SELECT, INSERT, UPDATE, DELETE.
+  - Create a `recipes` table with appropriate columns and RLS policies (see `/types/supabase.ts` for schema).
+  - Enable Row Level Security and add policies for SELECT, INSERT, UPDATE, DELETE.
 - **Authentication:**
-	- Uses Supabase Auth for sign-up, login, and session management.
+  - Uses Supabase Auth for sign-up, login, and session management.
 - **Styling:**
-	- Fully responsive with Tailwind CSS and Nuxt Image for optimized images.
+  - Fully responsive with Tailwind CSS and Nuxt Image for optimized images.
 - **Extensibility:**
-	- Easily add new features, pages, or integrations thanks to Nuxt 3 modularity.
+  - Easily add new features, pages, or integrations thanks to Nuxt 3 modularity.
 
 ---
 

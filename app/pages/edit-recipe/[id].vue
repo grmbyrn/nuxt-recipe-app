@@ -1,12 +1,11 @@
 <script setup lang="ts">
+const route = useRoute();
+const router = useRouter();
+const { user, fetchUser } = useAuth();
+const id = route.params.id as string;
 
-const route = useRoute()
-const router = useRouter()
-const { user, fetchUser } = useAuth()
-const id = route.params.id as string
-
-import { useRecipes } from '~/composables/useRecipes'
-const { getRecipeById, updateRecipe } = useRecipes()
+import { useRecipes } from '~/composables/useRecipes';
+const { getRecipeById, updateRecipe } = useRecipes();
 
 interface RawRecipeForm {
   name: string;
@@ -25,8 +24,8 @@ interface RawRecipeForm {
   mealType: string;
 }
 
-const error = ref<string | null>(null)
-const loading = ref(true)
+const error = ref<string | null>(null);
+const loading = ref(true);
 
 const rawForm = ref<RawRecipeForm>({
   name: '',
@@ -42,24 +41,24 @@ const rawForm = ref<RawRecipeForm>({
   ingredients: '',
   instructions: '',
   tags: '',
-  mealType: ''
+  mealType: '',
 });
 
 onMounted(async () => {
-  await fetchUser()
+  await fetchUser();
   try {
-    const { data, error: fetchError } = await getRecipeById(Number(id))
+    const { data, error: fetchError } = await getRecipeById(Number(id));
 
     if (fetchError || !data) {
-      error.value = 'Recipe not found'
-      loading.value = false
-      return
+      error.value = 'Recipe not found';
+      loading.value = false;
+      return;
     }
 
     if (data.userId !== user.value?.id) {
-      error.value = 'You are not authorized to edit this recipe.'
-      loading.value = false
-      return
+      error.value = 'You are not authorized to edit this recipe.';
+      loading.value = false;
+      return;
     }
 
     rawForm.value = {
@@ -67,19 +66,19 @@ onMounted(async () => {
       ingredients: (data.ingredients || []).join('\n'),
       instructions: (data.instructions || []).join('\n'),
       tags: (data.tags || []).join('\n'),
-      mealType: (data.mealType || []).join('\n')
-    }
-    loading.value = false
+      mealType: (data.mealType || []).join('\n'),
+    };
+    loading.value = false;
   } catch (err: any) {
-    error.value = err.message || 'Error fetching recipe'
-    loading.value = false
+    error.value = err.message || 'Error fetching recipe';
+    loading.value = false;
   }
-})
+});
 
 async function onUpdateRecipe() {
   if (!user.value) {
-    console.error('User not authenticated!')
-    return
+    console.error('User not authenticated!');
+    return;
   }
 
   const form = {
@@ -88,18 +87,18 @@ async function onUpdateRecipe() {
     instructions: rawForm.value.instructions.split('\n').map((i: string) => i.trim()),
     tags: rawForm.value.tags.split('\n').map((i: string) => i.trim()),
     mealType: rawForm.value.mealType.split('\n').map((i: string) => i.trim()),
-  }
+  };
 
   try {
-    const { error: updateError } = await updateRecipe(Number(id), form)
+    const { error: updateError } = await updateRecipe(Number(id), form);
 
     if (updateError) {
-      throw updateError
+      throw updateError;
     }
 
-    router.push(`/recipes/${id}`)
+    router.push(`/recipes/${id}`);
   } catch (err: any) {
-    error.value = err.message || 'Error updating recipe'
+    error.value = err.message || 'Error updating recipe';
   }
 }
 </script>
@@ -123,12 +122,36 @@ async function onUpdateRecipe() {
         <textarea v-model="rawForm.instructions" class="input" rows="5" required></textarea>
       </div>
 
-      <input type="number" v-model="rawForm.prepTimeMinutes" placeholder="Prep Time (mins)" class="input" required />
-      <input type="number" v-model="rawForm.cookTimeMinutes" placeholder="Cook Time (mins)" class="input" required />
-      <input type="number" v-model="rawForm.servings" placeholder="Servings" class="input" required />
+      <input
+        type="number"
+        v-model="rawForm.prepTimeMinutes"
+        placeholder="Prep Time (mins)"
+        class="input"
+        required
+      />
+      <input
+        type="number"
+        v-model="rawForm.cookTimeMinutes"
+        placeholder="Cook Time (mins)"
+        class="input"
+        required
+      />
+      <input
+        type="number"
+        v-model="rawForm.servings"
+        placeholder="Servings"
+        class="input"
+        required
+      />
       <input v-model="rawForm.difficulty" placeholder="Difficulty" class="input" required />
       <input v-model="rawForm.cuisine" placeholder="Cuisine" class="input" required />
-      <input type="number" v-model="rawForm.caloriesPerServing" placeholder="Calories per Serving" class="input" required />
+      <input
+        type="number"
+        v-model="rawForm.caloriesPerServing"
+        placeholder="Calories per Serving"
+        class="input"
+        required
+      />
 
       <div>
         <label class="block font-semibold mb-1">Tags (one per line)</label>

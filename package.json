@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "eslint --ext .ts,.js,.vue . || true",
+    "format": "prettier --write . || true",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -24,10 +26,17 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitest/ui": "^4.0.18",
     "@vue/test-utils": "^2.4.6",
+    "eslint": "^10.0.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.8.0",
     "jsdom": "^28.1.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.4.2",
     "vitest": "^4.0.18"
   }
 }

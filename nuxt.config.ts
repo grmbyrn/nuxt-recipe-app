@@ -10,39 +10,34 @@ export default defineNuxtConfig({
     sharedPrerenderData: false,
     defaults: {
       useAsyncData: {
-        deep: true
-      }
-    }
+        deep: true,
+      },
+    },
   },
 
   image: {
-    domains: ['https://cdn.dummyjson.com']
+    domains: ['https://cdn.dummyjson.com'],
   },
 
   unhead: {
     renderSSRHeadOptions: {
-      omitLineBreaks: false
-    }
+      omitLineBreaks: false,
+    },
   },
 
   devtools: { enabled: true },
-  modules: [
-    '@nuxtjs/tailwindcss',
-    '@nuxtjs/google-fonts',
-    '@nuxt/icon',
-    '@nuxt/image'
-  ],
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/google-fonts', '@nuxt/icon', '@nuxt/image'],
 
   googleFonts: {
     families: {
-      Montserrat: true
-    }
+      Montserrat: true,
+    },
   },
-  
+
   runtimeConfig: {
     public: {
       supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_KEY
-    }
-  }
-})
+      supabaseKey: process.env.SUPABASE_KEY,
+    },
+  },
+});

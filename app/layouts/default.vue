@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import BaseNavigation from '~/components/BaseNavigation.vue';
-
 </script>
 
 <template>
-    <div>
-        <BaseNavigation />
-        <slot />
-    </div>
+  <div>
+    <BaseNavigation />
+    <slot />
+  </div>
 </template>
