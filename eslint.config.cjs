@@ -4,6 +4,7 @@
 // but it provides the parser, parserOptions, plugins and the project's custom rules.
 module.exports = [
   {
+    files: ['**/*.{js,ts,vue}'],
     ignores: ['node_modules/**', '.nuxt/**', '.output/**', 'dist/**', 'build/**'],
     languageOptions: {
       parser: require('vue-eslint-parser'),

@@ -31,7 +31,7 @@ describe('RecipeCard', () => {
     });
 
     expect(wrapper.text()).toContain('Test Pancakes');
-    expect(wrapper.text()).toContain('10'); // cookTimeMinutes
+    expect(wrapper.text()).toContain('15'); // totalTime (prep + cook)
     expect(wrapper.text()).toContain('200'); // caloriesPerServing
     expect(wrapper.text()).toContain('4.5 (12)'); // rating and reviewCount
   });
