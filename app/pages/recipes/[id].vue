@@ -54,7 +54,7 @@ onMounted(async () => {
 });
 
 const handleDelete = async () => {
-  if (!user.value || !recipe.value || user.value.id !== recipe.value.userId) {
+  if (!user.value || !recipe.value || String(user.value.id) !== String(recipe.value.userId)) {
     error.value = 'You are not authorized to delete this recipe.';
     return;
   }
@@ -148,10 +148,10 @@ const handleDelete = async () => {
       <!-- Back Button -->
       <BaseBtn :to="`/`" label="Back to Recipes" />
 
-      <div v-if="user?.id === recipe.userId">
+      <div v-if="String(user?.id) === String(recipe.userId)">
         <button @click="handleDelete">Delete Recipe</button>
         <NuxtLink
-          v-if="user?.id === recipe.userId"
+          v-if="String(user?.id) === String(recipe.userId)"
           :to="`/edit-recipe/${recipe.id}`"
           class="text-blue-500 underline"
         >

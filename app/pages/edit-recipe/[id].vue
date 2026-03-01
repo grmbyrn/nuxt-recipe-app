@@ -90,7 +90,14 @@ async function onUpdateRecipe() {
   };
 
   try {
-    const { error: updateError } = await updateRecipe(Number(id), form);
+    // Remove null/undefined fields so payload matches DB Update types (numeric fields expect number|undefined, not null)
+    const sanitizedForm = Object.fromEntries(
+      Object.entries(form as Record<string, unknown>).filter(
+        ([, v]) => v !== null && v !== undefined
+      )
+    ) as Partial<typeof form>;
+
+    const { error: updateError } = await updateRecipe(Number(id), sanitizedForm as any);
 
     if (updateError) {
       throw updateError;

@@ -1,25 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RecipeCard from '../../app/components/RecipeCard.vue';
-
-type Recipe = {
-  id: number;
-  name: string;
-  ingredients: string[];
-  instructions: string[];
-  prepTimeMinutes: number;
-  cookTimeMinutes: number;
-  servings: number;
-  difficulty: string;
-  cuisine: string;
-  caloriesPerServing: number;
-  tags: string[];
-  userId: string;
-  image: string;
-  rating: number;
-  reviewCount: number;
-  mealType: string[];
-};
+import type { Recipe } from '../../types/recipe';
 
 const makeRecipe = (): Recipe => ({
   id: 1,

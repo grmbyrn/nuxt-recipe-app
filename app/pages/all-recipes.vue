@@ -63,6 +63,6 @@ const {
         }"
       />
     </div>
-    <p v-else class="text-xl text-red-600">{{ error }}</p>
+    <p v-else class="text-xl text-red-600">{{ error?.message ?? String(error) }}</p>
   </section>
 </template>

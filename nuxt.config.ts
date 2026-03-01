@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   },
 
   image: {
-    domains: ['https://cdn.dummyjson.com'],
+    domains: ['cdn.dummyjson.com'],
   },
 
   unhead: {

@@ -5,11 +5,7 @@ import { ref } from 'vue';
 const search = ref('');
 const { recipes, loading, error, fetchRecipes } = useRecipes();
 
-const {
-  data: initialRecipes,
-  pending,
-  error: asyncError,
-} = await useAsyncData('recipes', async () => {
+const { pending } = await useAsyncData('recipes', async () => {
   await fetchRecipes(6);
   return recipes.value;
 });

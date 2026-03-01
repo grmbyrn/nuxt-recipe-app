@@ -45,6 +45,6 @@ const {
     <p v-else-if="!error && recipesData && !recipesData.length" class="text-xl">
       You haven’t created any recipes yet.
     </p>
-    <p v-else class="text-xl text-red-600">{{ error }}</p>
+    <p v-else class="text-xl text-red-600">{{ error?.message ?? String(error) }}</p>
   </section>
 </template>

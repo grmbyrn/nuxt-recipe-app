@@ -1,7 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { useRuntimeConfig } from '#imports';
+import type { Database } from '../../types/supabase';
 
-let supabaseClient: ReturnType<typeof createClient> | null = null;
+let supabaseClient: SupabaseClient<Database> | null = null;
 
 export const useSupabase = () => {
   if (!supabaseClient) {
@@ -13,7 +14,7 @@ export const useSupabase = () => {
         'Missing Supabase env vars. Set SUPABASE_URL and SUPABASE_KEY in a .env file (see README).'
       );
     }
-    supabaseClient = createClient(supabaseUrl, supabaseKey);
+    supabaseClient = createClient<Database>(supabaseUrl, supabaseKey);
   }
   return supabaseClient;
 };
